@@ -1,0 +1,13 @@
+# Local electoral-roll source files and generated outputs
+rolls_pdf/
+rolls_out/
+*.pdf
+*.csv
+*.xlsx
+*Voter_Search*.html
+*VOTERS*.html
+
+# Python / notebook artifacts
+__pycache__/
+.ipynb_checkpoints/
+.env

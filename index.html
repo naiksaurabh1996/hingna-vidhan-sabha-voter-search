@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Voter Search | Nagpur Gramin Congress Committee</title>
+
+<style>
+:root {
+    --saffron: #FF9933;
+    --saffron-dark: #d9740c;
+    --green: #138808;
+    --navy: #06038D;
+    --ink: #1c2540;
+    --bg: #f5f6fa;
+    --line: #d9dde8;
+}
+* { box-sizing: border-box; }
+body {
+    font-family: "Segoe UI", Arial, sans-serif;
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+}
+
+/* ---------- Tricolour header ---------- */
+header { background: #fff; box-shadow: 0 2px 6px rgba(0,0,0,.12); }
+.band-top    { height: 10px; background: var(--saffron); }
+.band-bottom { height: 10px; background: var(--green); }
+.head-inner {
+    max-width: 1300px; margin: 0 auto; padding: 14px 20px;
+    display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+}
+.chakra { width: 62px; height: 62px; flex: none; }
+.head-text h1 { margin: 0; font-size: 26px; color: var(--navy); line-height: 1.15; }
+.head-text .org { margin-top: 3px; font-size: 16px; font-weight: 700; color: var(--green); }
+.creator {
+    margin-left: auto; text-align: right; font-size: 13px; color: #555;
+}
+.creator b {
+    display: block; font-size: 17px; color: var(--saffron-dark);
+}
+
+main { max-width: 1300px; margin: 0 auto; padding: 18px 20px 30px; }
+
+/* ---------- Panels ---------- */
+.panel {
+    background: #fff; border-radius: 8px; padding: 16px;
+    box-shadow: 0 1px 5px rgba(0,0,0,.12); margin-bottom: 18px;
+    border-top: 4px solid var(--saffron);
+}
+.panel.green { border-top-color: var(--green); }
+.panel h2 {
+    margin: 0 0 12px; font-size: 17px; color: var(--navy);
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+}
+.panel h2 small { font-weight: 400; color: #666; font-size: 13px; }
+
+/* ---------- Search filters ---------- */
+.filters {
+    display: grid; gap: 12px;
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+}
+.field label {
+    display: block; font-size: 12px; font-weight: 700;
+    color: #444; margin-bottom: 4px; letter-spacing: .3px;
+}
+.field.wide { grid-column: span 2; }
+@media (max-width: 520px) { .field.wide { grid-column: span 1; } }
+input, select, button {
+    width: 100%; padding: 10px; font-size: 15px;
+    border: 1px solid #b8bfd0; border-radius: 6px; background: #fff;
+    font-family: inherit;
+}
+input:focus, select:focus {
+    outline: 2px solid var(--saffron); border-color: var(--saffron);
+}
+.age-pair { display: flex; gap: 8px; }
+.actions { display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
+.actions button { width: auto; padding: 10px 22px; cursor: pointer; font-weight: 700; }
+.btn-clear  { background: #fff; color: var(--saffron-dark); border: 2px solid var(--saffron); }
+.btn-export { background: var(--green); color: #fff; border: 2px solid var(--green); }
+.btn-clear:hover  { background: #fff3e3; }
+.btn-export:hover { background: #0e6a06; }
+.hint { font-size: 12px; color: #666; margin-top: 10px; }
+
+/* ---------- Statistics ---------- */
+.stat-grid {
+    display: grid; gap: 12px;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+}
+.stat {
+    background: #fff; border: 1px solid var(--line);
+    border-top: 4px solid var(--saffron);
+    border-radius: 8px; padding: 12px 14px;
+}
+.stat:nth-child(3n+2) { border-top-color: var(--navy); }
+.stat:nth-child(3n)   { border-top-color: var(--green); }
+.stat .num { font-size: 26px; font-weight: 800; color: var(--ink); }
+.stat .lbl { font-size: 12px; color: #555; text-transform: uppercase; letter-spacing: .5px; }
+.stat .sub { font-size: 12px; color: #777; margin-top: 2px; }
+
+.charts {
+    display: grid; gap: 18px; margin-top: 18px;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+.chart h3 { margin: 0 0 8px; font-size: 14px; color: var(--navy); }
+.bar-row { display: flex; align-items: center; gap: 8px; margin: 6px 0; font-size: 13px; }
+.bar-row .name { width: 110px; flex: none; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bar-row .track { flex: 1; background: #edf0f6; border-radius: 4px; height: 16px; overflow: hidden; }
+.bar-row .fill { height: 100%; border-radius: 4px; background: var(--saffron); }
+.bar-row .val { width: 92px; flex: none; text-align: right; color: #444; }
+.fill.g { background: var(--green); }
+.fill.n { background: var(--navy); }
+.split { display: flex; height: 22px; border-radius: 5px; overflow: hidden; margin: 6px 0 8px; }
+.split span { display: block; height: 100%; }
+.legend { font-size: 13px; display: flex; gap: 14px; flex-wrap: wrap; }
+.dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 5px; }
+
+/* ---------- Results ---------- */
+#count { margin: 4px 0 12px; font-weight: 700; color: var(--navy); }
+.results {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(310px, 1fr)); gap: 12px;
+}
+.card {
+    background: #fff; padding: 14px; border-radius: 8px;
+    box-shadow: 0 1px 4px rgba(0,0,0,.18);
+    border-left: 5px solid var(--saffron);
+    overflow-wrap: anywhere;
+}
+.card h3 { margin: 0 0 8px; color: var(--navy); font-size: 17px; }
+.card h3 .en { color: #444; font-weight: 600; font-size: 14px; }
+.card p { margin: 4px 0; font-size: 14px; }
+.card.exact { border-left-color: var(--green); background: #f6fff4; }
+.badge {
+    display: inline-block; font-size: 11px; font-weight: 700; padding: 2px 8px;
+    border-radius: 10px; color: #fff; margin-left: 6px; vertical-align: middle;
+}
+.badge.m { background: var(--navy); }
+.badge.f { background: #c2185b; }
+.badge.t { background: #666; }
+#more {
+    margin: 18px auto; padding: 11px 26px; width: auto; display: none;
+    background: var(--saffron); color: #fff; font-weight: 700; border: none; cursor: pointer;
+}
+#more:hover { background: var(--saffron-dark); }
+
+footer { background: #fff; text-align: center; box-shadow: 0 -2px 6px rgba(0,0,0,.08); }
+footer .foot-inner { padding: 14px 20px; font-size: 14px; color: #444; }
+footer b { color: var(--navy); }
+</style>
+</head>
+
+<body>
+<header>
+    <div class="band-top"></div>
+    <div class="head-inner">
+        <svg class="chakra" viewBox="0 0 100 100" aria-hidden="true">
+            <g stroke="#06038D" fill="none" stroke-width="2.2">
+                <circle cx="50" cy="50" r="46" stroke-width="4"/>
+                <circle cx="50" cy="50" r="7" fill="#06038D"/>
+                <g id="spokes"><line x1="50" y1="50" x2="89.00" y2="50.00"/><line x1="50" y1="50" x2="87.67" y2="60.09"/><line x1="50" y1="50" x2="83.77" y2="69.50"/><line x1="50" y1="50" x2="77.58" y2="77.58"/><line x1="50" y1="50" x2="69.50" y2="83.77"/><line x1="50" y1="50" x2="60.09" y2="87.67"/><line x1="50" y1="50" x2="50.00" y2="89.00"/><line x1="50" y1="50" x2="39.91" y2="87.67"/><line x1="50" y1="50" x2="30.50" y2="83.77"/><line x1="50" y1="50" x2="22.42" y2="77.58"/><line x1="50" y1="50" x2="16.23" y2="69.50"/><line x1="50" y1="50" x2="12.33" y2="60.09"/><line x1="50" y1="50" x2="11.00" y2="50.00"/><line x1="50" y1="50" x2="12.33" y2="39.91"/><line x1="50" y1="50" x2="16.23" y2="30.50"/><line x1="50" y1="50" x2="22.42" y2="22.42"/><line x1="50" y1="50" x2="30.50" y2="16.23"/><line x1="50" y1="50" x2="39.91" y2="12.33"/><line x1="50" y1="50" x2="50.00" y2="11.00"/><line x1="50" y1="50" x2="60.09" y2="12.33"/><line x1="50" y1="50" x2="69.50" y2="16.23"/><line x1="50" y1="50" x2="77.58" y2="22.42"/><line x1="50" y1="50" x2="83.77" y2="30.50"/><line x1="50" y1="50" x2="87.67" y2="39.91"/></g>
+            </g>
+        </svg>
+        <div class="head-text">
+            <h1>Voter Search &amp; Analysis</h1>
+            <div class="org">Nagpur Gramin Congress Committee</div>
+        </div>
+        <div class="creator">Created by <b>Saurabh Naik</b></div>
+    </div>
+    <div class="band-bottom"></div>
+</header>
+
+<main>
+
+<section class="panel">
+    <h2>Search Voters <small>Type names in English or Marathi &mdash; results update as you type</small></h2>
+
+    <div class="filters">
+        <div class="field wide">
+            <label for="searchName">VOTER NAME</label>
+            <input id="searchName" type="text" autocomplete="off"
+              placeholder="e.g. Saurabh Naik  /  सौरभ नाईक">
+        </div>
+
+        <div class="field">
+            <label for="searchVillage">VILLAGE / GAON</label>
+            <input id="searchVillage" type="text" list="villageList" autocomplete="off"
+              placeholder="e.g. Wadi, Digdoh, बोरी">
+            <datalist id="villageList"></datalist>
+        </div>
+
+        <div class="field">
+            <label for="searchSection">GAV (SECTION)</label>
+            <input id="searchSection" type="text" list="sectionList" autocomplete="off"
+              placeholder="e.g. Devli, Isasani, इसासनी">
+            <datalist id="sectionList"></datalist>
+        </div>
+
+        <div class="field">
+            <label for="searchPart">PART NO.</label>
+            <input id="searchPart" type="text" autocomplete="off"
+              placeholder="e.g. 12  or  5,9  or  20-30">
+        </div>
+
+        <div class="field">
+            <label for="searchSerial">SERIAL NO.</label>
+            <input id="searchSerial" type="text" inputmode="numeric" autocomplete="off"
+              placeholder="Serial number">
+        </div>
+
+        <div class="field">
+            <label for="searchEPIC">EPIC (VOTER ID)</label>
+            <input id="searchEPIC" type="text" autocomplete="off"
+              placeholder="e.g. URC6600084">
+        </div>
+
+        <div class="field">
+            <label for="talukaSel">TALUKA</label>
+            <select id="talukaSel"><option value="">All talukas</option></select>
+        </div>
+
+        <div class="field">
+            <label for="genderSel">GENDER</label>
+            <select id="genderSel">
+                <option value="">All</option>
+                <option value="1">Male</option>
+                <option value="2">Female</option>
+                <option value="3">Third Gender</option>
+            </select>
+        </div>
+
+        <div class="field">
+            <label>AGE (FROM &ndash; TO)</label>
+            <div class="age-pair">
+                <input id="ageMin" type="number" min="18" max="120" placeholder="From">
+                <input id="ageMax" type="number" min="18" max="120" placeholder="To">
+            </div>
+        </div>
+
+        <div class="field wide">
+            <label for="searchPS">POLLING STATION / ADDRESS</label>
+            <input id="searchPS" type="text" autocomplete="off"
+              placeholder="e.g. school name or area  /  शाळा">
+        </div>
+    </div>
+
+    <div class="actions">
+        <button class="btn-clear" onclick="clearSearch()">Clear All</button>
+        <button class="btn-export" onclick="exportCSV()">Download Results (Excel/CSV)</button>
+    </div>
+    <div class="hint">Tip: village and polling station can be typed in English or Marathi. Spelling differences (Wadi / Vadi) are handled automatically.</div>
+</section>
+
+<section class="panel green">
+    <h2><span id="statsTitle">Statistics</span> <small id="statsSub"></small></h2>
+    <div id="stats" class="stat-grid"></div>
+    <div class="charts" id="charts"></div>
+</section>
+
+<div id="count">Loading voters...</div>
+<div id="results" class="results"></div>
+<button id="more" onclick="showMore()">Show More</button>
+
+</main>
+
+<footer>
+    <div class="band-top" style="height:6px"></div>
+    <div class="foot-inner">
+        Created by <b>Saurabh Naik</b> &nbsp;|&nbsp; For <b>Nagpur Gramin Congress Committee</b>
+    </div>
+    <div class="band-bottom" style="height:6px"></div>
+</footer>
+
+<script id="data" type="text/plain">
+H4sIAEYm7GoC/6tWKkgsKilWsoqO1VEqyi+HsopTk0sy8/PAvFoAMolrmCQAAAA=
+</script>
+
+<script>
+const $ = id => document.getElementById(id);
+let data = [];
+
+const nameInput = $('searchName'), epicInput = $('searchEPIC'),
+      partInput = $('searchPart'), serialInput = $('searchSerial'),
+      villageInput = $('searchVillage'), sectionInput = $('searchSection'), psInput = $('searchPS'),
+      talukaSel = $('talukaSel'), genderSel = $('genderSel'),
+      ageMin = $('ageMin'), ageMax = $('ageMax');
+const resultsDiv = $('results'), countDiv = $('count'), moreBtn = $('more');
+
+let filtered = [];      // [{i, score}]
+let shown = 0;
+const PAGE_SIZE = 60;
+
+function normalize(s) {
+    return String(s || '')
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[.,]/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+}
+const fmt = n => Number(n).toLocaleString('en-IN');
+const toTitle = t => t.replace(/\b[a-z]/g, c => c.toUpperCase());
+function escapeHTML(value) {
+    return String(value ?? '').replace(/[&<>"']/g, c => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+    }[c]));
+}
+
+// ===== English <-> Marathi phonetic search =====
+const D_IV={'अ':'a','आ':'a','इ':'i','ई':'i','उ':'u','ऊ':'u','ऋ':'ri','ए':'e','ऐ':'ai','ओ':'o','औ':'au','ऑ':'o'};
+const D_MV={'ा':'a','ि':'i','ी':'i','ु':'u','ू':'u','ृ':'ri','े':'e','ै':'ai','ो':'o','ौ':'au','ॉ':'o','ॅ':'e'};
+const D_C={'क':'k','ख':'kh','ग':'g','घ':'gh','ङ':'n','च':'ch','छ':'chh','ज':'j','झ':'jh','ञ':'n','ट':'t','ठ':'th','ड':'d','ढ':'dh','ण':'n','त':'t','थ':'th','द':'d','ध':'dh','न':'n','प':'p','फ':'f','ब':'b','भ':'bh','म':'m','य':'y','र':'r','ल':'l','व':'v','श':'sh','ष':'sh','स':'s','ह':'h','ळ':'l'};
+const LABIAL=new Set(['प','फ','ब','भ','म']);
+
+// Marathi (Devanagari) -> rough English spelling
+function deva2roman(s) {
+    const ch = [...String(s || '').normalize('NFC')];
+    let out = '';
+    for (let i = 0; i < ch.length; i++) {
+        const c = ch[i];
+        if (D_C[c] !== undefined) {
+            out += D_C[c];
+            const nx = ch[i + 1];
+            if (nx === '्') { i++; continue; }          // half consonant
+            if (nx !== undefined && D_MV[nx] !== undefined) { out += D_MV[nx]; i++; }
+            else if (nx === undefined || nx === 'ं' || nx === 'ँ' || nx === 'ः' || /[\s.,]/.test(nx)) { /* final schwa dropped */ }
+            else out += 'a';
+        } else if (D_IV[c] !== undefined) out += D_IV[c];
+        else if (c === 'ं' || c === 'ँ') out += LABIAL.has(ch[i + 1]) ? 'm' : 'n';
+        else if (c === 'ः') out += 'h';
+        else if (/[\u0900-\u097F]/.test(c)) { /* ignore other marks */ }
+        else out += c;
+    }
+    return out;
+}
+
+// Sound-alike skeleton: saurabh / sourabh / sorab -> "Srb"
+function skel(w) {
+    w = String(w).toLowerCase().replace(/[^a-z]/g, '');
+    w = w.replace(/ksh|x/g, 'K').replace(/chh/g, 'C').replace(/ch/g, 'C')
+         .replace(/sh|ss/g, 'S').replace(/ph|f/g, 'P')
+         .replace(/th/g, 't').replace(/dh/g, 'd').replace(/bh/g, 'b')
+         .replace(/gh/g, 'g').replace(/kh/g, 'k').replace(/jh/g, 'j')
+         .replace(/[wv]/g, 'b').replace(/z/g, 'j').replace(/c/g, 'k')
+         .replace(/q/g, 'k').replace(/y/g, '').replace(/s/g, 'S').replace(/h/g, '');
+    w = w.replace(/[aeiou]+/g, '');
+    return w.replace(/(.)\1+/g, '$1');
+}
+
+const hasDevanagari = s => /[\u0900-\u097F]/.test(s);
+const romanWords = s => String(s || '').toLowerCase().replace(/[^a-z\s]/g, ' ').split(/\s+/).filter(Boolean);
+
+// Precompute English-sounding forms of every voter name (once, cached per word)
+let nameIdx = [];
+function buildIndex() {
+    const cache = new Map();
+    const conv = w => {
+        let v = cache.get(w);
+        if (!v) {
+            const r = romanWords(deva2roman(w)).join('');
+            v = { r, s: skel(r) };
+            cache.set(w, v);
+        }
+        return v;
+    };
+    nameIdx = new Array(data.length);
+    for (let i = 0; i < data.length; i++) {
+        const row = data[i];
+        const rw = [], sw = [];
+        for (const w of String(row[3] || '').split(/[\s.,]+/)) {
+            if (!w) continue;
+            const v = conv(w);
+            if (v.r) { rw.push(v.r); sw.push(v.s); }
+        }
+        if (row[4]) for (const w of romanWords(row[4])) { rw.push(w); sw.push(skel(w)); }
+        nameIdx[i] = { rw, sw };
+    }
+}
+
+function prepEnglishQuery(q) {
+    return romanWords(q).map(w => ({ r: w, s: skel(w) }));
+}
+
+// 3 = same spelling, 2 = typed prefix, 1 = sounds the same (Sourabh / Saurabh), 0 = no match
+function wordMatch(q, rw, sw) {
+    if (rw === q.r) return 3;
+    if (rw.startsWith(q.r)) return 2;
+    if (q.s && sw === q.s) return 1;
+    return 0;
+}
+
+// Every typed word must match a name word. Unrelated names score 0.
+function englishScore(qs, ix) {
+    const { rw, sw } = ix;
+    const n = rw.length;
+    if (!n || qs.length > n) return 0;
+
+    // Pass 1: words in typed order
+    let pos = 0, total = 0, minT = 3, ok = true, firstIdx = -1, lastIdx = -1;
+    for (let k = 0; k < qs.length && ok; k++) {
+        let best = 0, bi = -1;
+        for (let i = pos; i < n; i++) {
+            const t = wordMatch(qs[k], rw[i], sw[i]);
+            if (t > best) { best = t; bi = i; if (t === 3) break; }
+        }
+        if (bi < 0) ok = false;
+        else { total += best; if (best < minT) minT = best; pos = bi + 1; if (k === 0) firstIdx = bi; lastIdx = bi; }
+    }
+    let score;
+    if (ok) {
+        // spelled the same (or typed prefix) beats merely sound-alike names
+        score = (minT >= 2 ? 700 : 500) + total * 10;
+        if (firstIdx === 0) score += 60;
+        if (lastIdx === n - 1) score += 40;
+        if (n === qs.length) score += minT === 3 ? 200 : 100;
+        score -= Math.min(n - qs.length, 5) * 5;
+        return score;
+    }
+
+    // Pass 2: same words, any order
+    const used = new Set();
+    total = 0;
+    for (const q of qs) {
+        let best = 0, bi = -1;
+        for (let i = 0; i < n; i++) {
+            if (used.has(i)) continue;
+            const t = wordMatch(q, rw[i], sw[i]);
+            if (t > best) { best = t; bi = i; if (t === 3) break; }
+        }
+        if (bi < 0) return 0;
+        used.add(bi); total += best;
+    }
+    return 300 + total * 10;
+}
+
+// Marathi typed query: ranked, but no loose "any one word" matches
+function marathiScore(name, query) {
+    const n = normalize(name), q = normalize(query);
+    if (!q) return 0;
+    if (n === q) return 1000;
+    if (n.startsWith(q)) return 800;
+    const qw = q.split(' ').filter(Boolean), nw = n.split(' ').filter(Boolean);
+    if (qw.every(a => nw.some(b => b.startsWith(a)))) {
+        let pos = 0, ordered = true;
+        for (const a of qw) {
+            const f = n.indexOf(a, pos);
+            if (f < 0) { ordered = false; break; }
+            pos = f + a.length;
+        }
+        return ordered ? 700 : 600;
+    }
+    if (n.includes(q)) return 400;
+    return 0;
+}
+
+
+// ===== Per-row facts (numbers kept in compact arrays for speed) =====
+let ageArr, genArr, vIdArr, tIdArr, psIdArr, partArr, serArr, secIdArr;
+const villages = [], talukas = [], pss = [], sections = [];
+const TALUKA_EN = { 'हिगंणा': 'Hingna', 'नागपुर (ग्रामीण)': 'Nagpur (Rural)', 'नागपुर': 'Nagpur' };
+
+function textObj(mr, en) {
+    const rw = romanWords(deva2roman(mr));
+    return { mr, en, rw, sw: rw.map(skel), count: 0 };
+}
+
+function buildMeta() {
+    const n = data.length;
+    ageArr = new Uint8Array(n);  genArr = new Uint8Array(n);
+    vIdArr = new Uint16Array(n); tIdArr = new Uint8Array(n);
+    psIdArr = new Uint16Array(n); partArr = new Uint16Array(n);
+    serArr = new Uint32Array(n); secIdArr = new Uint16Array(n);
+    const sMap = new Map();
+    const vMap = new Map(), tMap = new Map(), pMap = new Map();
+
+    for (let i = 0; i < n; i++) {
+        const r = data[i];
+        ageArr[i] = parseInt(r[10], 10) || 0;
+        genArr[i] = r[11] === 'Male' ? 1 : r[11] === 'Female' ? 2 : 3;
+        partArr[i] = parseInt(r[0], 10) || 0;
+        serArr[i] = parseInt(r[1], 10) || 0;
+
+        const sk = r[34] || '';
+        let sc = sMap.get(sk);
+        if (sc === undefined) {
+            sc = sections.length; sMap.set(sk, sc);
+            sections.push(textObj(sk, toTitle(deva2roman(sk))));
+        }
+        secIdArr[i] = sc; sections[sc].count++;
+
+        const vk = r[21] || '';
+        let v = vMap.get(vk);
+        if (v === undefined) {
+            v = villages.length; vMap.set(vk, v);
+            villages.push(textObj(vk, toTitle(deva2roman(vk))));
+        }
+        vIdArr[i] = v; villages[v].count++;
+
+        const tk = r[25] || '';
+        let t = tMap.get(tk);
+        if (t === undefined) {
+            t = talukas.length; tMap.set(tk, t);
+            talukas.push(textObj(tk, TALUKA_EN[tk] || toTitle(deva2roman(tk))));
+        }
+        tIdArr[i] = t; talukas[t].count++;
+
+        const pk = (r[30] || '') + ' ' + (r[32] || '');
+        let p = pMap.get(pk);
+        if (p === undefined) {
+            p = pss.length; pMap.set(pk, p);
+            pss.push(textObj(pk, toTitle(deva2roman(r[30] || ''))));
+        }
+        psIdArr[i] = p; pss[p].count++;
+    }
+
+    // taluka dropdown
+    [...talukas.keys()].sort((a, b) => talukas[b].count - talukas[a].count).forEach(id => {
+        const o = document.createElement('option');
+        o.value = id;
+        o.textContent = `${talukas[id].en} (${talukas[id].mr}) - ${fmt(talukas[id].count)}`;
+        talukaSel.appendChild(o);
+    });
+
+    // Gav (Section) suggestions
+    const sdl = $('sectionList');
+    [...sections.keys()].sort((a, b) => sections[b].count - sections[a].count).forEach(id => {
+        if (!sections[id].mr) return;
+        const o = document.createElement('option');
+        o.value = sections[id].en;
+        o.label = `${sections[id].mr} (${fmt(sections[id].count)} voters)`;
+        sdl.appendChild(o);
+    });
+
+    // village suggestions
+    const dl = $('villageList');
+    [...villages.keys()].sort((a, b) => villages[b].count - villages[a].count).forEach(id => {
+        if (!villages[id].mr) return;
+        const o = document.createElement('option');
+        o.value = villages[id].en;
+        o.label = `${villages[id].mr} (${fmt(villages[id].count)} voters)`;
+        dl.appendChild(o);
+    });
+}
+
+// Common English words -> how they sound in the Marathi records
+const WORD_ALIAS = {
+    school: 'shala', schools: 'shala', zp: 'jilha', college: 'mahavidyalaya',
+    hall: 'sabhagruha', room: 'kholi', primary: 'prathamik', high: 'uchcha',
+    secondary: 'madhyamik', village: 'gaon', ward: 'prabhag'
+};
+
+// Which villages / polling stations match what was typed (English or Marathi)
+function textFilter(list, q) {
+    q = q.trim();
+    if (!q) return null;
+    const flags = new Uint8Array(list.length);
+    const qs = hasDevanagari(q) ? [] : romanWords(q).map(w => {
+        w = WORD_ALIAS[w] || w;
+        return { r: w, s: skel(w) };
+    });
+
+    if (!qs.length) {                         // Marathi text or digits only
+        const nq = normalize(q);
+        list.forEach((o, i) => { if (normalize(o.mr).includes(nq)) flags[i] = 1; });
+        return flags;
+    }
+    list.forEach((o, i) => {
+        const ok = qs.every(w => o.rw.some((x, j) =>
+            x.startsWith(w.r) ||
+            (w.r.length >= 3 && x.includes(w.r)) ||
+            (w.s.length >= 2 && o.sw[j] === w.s)));
+        if (ok) flags[i] = 1;
+    });
+    return flags;
+}
+
+// "12", "5,9", "20-30"
+function parsePartSpec(s) {
+    const items = [];
+    for (const tok of s.split(/[,\s]+/).filter(Boolean)) {
+        const m = tok.match(/^(\d+)\s*-\s*(\d+)$/);
+        if (m) items.push([+m[1], +m[2]]);
+        else if (/^\d+$/.test(tok)) items.push([+tok, +tok]);
+    }
+    return items;
+}
+
+// ===== Search =====
+function search() {
+    const nameRaw = nameInput.value;
+    const nameQ = normalize(nameRaw);
+    const useMarathi = hasDevanagari(nameRaw);
+    const qWords = useMarathi ? [] : prepEnglishQuery(nameRaw);
+    const nameNoLetters = nameQ && !useMarathi && !qWords.length;
+
+    const epicQ = normalize(epicInput.value);
+    const partSpec = parsePartSpec(partInput.value);
+    const partTyped = partInput.value.trim() !== '';
+    const serialN = parseInt(serialInput.value, 10);
+    const serialTyped = serialInput.value.trim() !== '';
+    const vFlags = textFilter(villages, villageInput.value);
+    const sFlags = textFilter(sections, sectionInput.value);
+    const pFlags = textFilter(pss, psInput.value);
+    const tSel = talukaSel.value === '' ? -1 : +talukaSel.value;
+    const gSel = genderSel.value === '' ? 0 : +genderSel.value;
+    const aMin = parseInt(ageMin.value, 10) || 0;
+    const aMax = parseInt(ageMax.value, 10) || 0;
+
+    window.anyFilter = !!(nameQ || epicQ || partTyped || serialTyped ||
+        vFlags || sFlags || pFlags || tSel >= 0 || gSel || aMin || aMax);
+
+    filtered = [];
+
+    for (let i = 0; i < data.length; i++) {
+        if (nameNoLetters) break;
+        if (tSel >= 0 && tIdArr[i] !== tSel) continue;
+        if (gSel && genArr[i] !== gSel) continue;
+        if (aMin && ageArr[i] < aMin) continue;
+        if (aMax && ageArr[i] > aMax) continue;
+        if (vFlags && !vFlags[vIdArr[i]]) continue;
+        if (sFlags && !sFlags[secIdArr[i]]) continue;
+        if (pFlags && !pFlags[psIdArr[i]]) continue;
+        if (serialTyped && serArr[i] !== serialN) continue;
+        if (partTyped) {
+            const p = partArr[i];
+            if (!partSpec.some(([a, b]) => p >= a && p <= b)) continue;
+        }
+        const row = data[i];
+        if (epicQ) {
+            if (!normalize(row[2]).includes(epicQ)) continue;
+        }
+
+        let score = 0;
+        if (nameQ) {
+            score = useMarathi ? marathiScore(row[3], nameQ) : englishScore(qWords, nameIdx[i]);
+            if (score === 0) continue;
+        }
+        filtered.push({ i, score });
+    }
+
+    filtered.sort((a, b) => {
+        if (b.score !== a.score) return b.score - a.score;
+        if (partArr[a.i] !== partArr[b.i]) return partArr[a.i] - partArr[b.i];
+        return serArr[a.i] - serArr[b.i];
+    });
+
+    shown = 0;
+    resultsDiv.innerHTML = '';
+    renderStats();
+    showMore();
+}
+
+// ===== Statistics =====
+function bar(name, val, max, total, cls) {
+    const w = max ? Math.max(val / max * 100, val ? 2 : 0) : 0;
+    const pct = total ? (val / total * 100).toFixed(1) : '0.0';
+    return `<div class="bar-row"><span class="name" title="${escapeHTML(name)}">${escapeHTML(name)}</span>
+        <span class="track"><span class="fill ${cls || ''}" style="display:block;width:${w}%"></span></span>
+        <span class="val">${fmt(val)} (${pct}%)</span></div>`;
+}
+
+function renderStats() {
+    let m = 0, f = 0, t = 0, ageSum = 0, ageN = 0;
+    const bands = [0, 0, 0, 0, 0];
+    const vCnt = new Uint32Array(villages.length);
+    const parts = new Set();
+    let youngest = 999, oldest = 0;
+
+    for (const { i } of filtered) {
+        const g = genArr[i];
+        if (g === 1) m++; else if (g === 2) f++; else t++;
+        const a = ageArr[i];
+        if (a) {
+            ageSum += a; ageN++;
+            if (a < youngest) youngest = a;
+            if (a > oldest) oldest = a;
+            bands[a <= 25 ? 0 : a <= 35 ? 1 : a <= 45 ? 2 : a <= 60 ? 3 : 4]++;
+        }
+        vCnt[vIdArr[i]]++;
+        parts.add(partArr[i]);
+    }
+
+    const total = filtered.length;
+    const pc = x => total ? (x / total * 100).toFixed(1) + '%' : '0%';
+    const avg = ageN ? (ageSum / ageN).toFixed(1) : '-';
+    let vN = 0; vCnt.forEach(c => { if (c) vN++; });
+
+    $('statsTitle').textContent = window.anyFilter ? 'Statistics for current search' : 'Statistics - All voters';
+    $('statsSub').textContent = window.anyFilter ? `(${fmt(total)} of ${fmt(data.length)} voters)` : '';
+
+    const card = (num, lbl, sub) => `<div class="stat"><div class="num">${num}</div>
+        <div class="lbl">${lbl}</div>${sub ? `<div class="sub">${sub}</div>` : ''}</div>`;
+
+    $('stats').innerHTML =
+        card(fmt(total), 'Total Voters', window.anyFilter ? `of ${fmt(data.length)} overall` : '') +
+        card(fmt(m), 'Male', pc(m)) +
+        card(fmt(f), 'Female', pc(f)) +
+        card(fmt(t), 'Third Gender', pc(t)) +
+        card(avg, 'Average Age', ageN ? `Range ${youngest} - ${oldest} years` : '') +
+        card(m ? Math.round(f / m * 1000) : '-', 'Sex Ratio', 'females per 1000 males') +
+        card(fmt(vN), 'Villages', '') +
+        card(fmt(parts.size), 'Parts / Booths', '');
+
+    // charts
+    const maxBand = Math.max(...bands, 1);
+    const bandNames = ['18 - 25 yrs', '26 - 35 yrs', '36 - 45 yrs', '46 - 60 yrs', 'Above 60'];
+    const topV = [...vCnt.keys()].filter(k => vCnt[k]).sort((a, b) => vCnt[b] - vCnt[a]).slice(0, 6);
+    const maxV = topV.length ? vCnt[topV[0]] : 1;
+
+    $('charts').innerHTML = `
+      <div class="chart">
+        <h3>Male vs Female</h3>
+        <div class="split">
+          <span style="width:${total ? m / total * 100 : 0}%;background:#06038D"></span>
+          <span style="width:${total ? f / total * 100 : 0}%;background:#c2185b"></span>
+          <span style="width:${total ? t / total * 100 : 0}%;background:#777"></span>
+        </div>
+        <div class="legend">
+          <span><i class="dot" style="background:#06038D"></i>Male ${pc(m)}</span>
+          <span><i class="dot" style="background:#c2185b"></i>Female ${pc(f)}</span>
+          <span><i class="dot" style="background:#777"></i>Other ${pc(t)}</span>
+        </div>
+      </div>
+      <div class="chart">
+        <h3>Age Groups</h3>
+        ${bands.map((b, k) => bar(bandNames[k], b, maxBand, ageN, k % 2 ? 'g' : '')).join('')}
+      </div>
+      <div class="chart">
+        <h3>Top Villages ${window.anyFilter ? '(in this search)' : 'by voters'}</h3>
+        ${topV.length ? topV.map(k => bar(villages[k].en || villages[k].mr || '-', vCnt[k], maxV, total, 'n')).join('')
+                      : '<div class="hint">No data</div>'}
+      </div>`;
+}
+
+// ===== Result cards =====
+function showMore() {
+    const end = Math.min(shown + PAGE_SIZE, filtered.length);
+
+    for (let k = shown; k < end; k++) {
+        const { i, score } = filtered[k];
+        const r = data[i];
+        const g = genArr[i];
+        const v = villages[vIdArr[i]], tl = talukas[tIdArr[i]], ps = pss[psIdArr[i]];
+
+        const card = document.createElement('div');
+        card.className = 'card' + (score >= 800 ? ' exact' : '');
+
+        card.innerHTML = `
+            <h3>${escapeHTML(r[3])}
+                <span class="badge ${g === 1 ? 'm' : g === 2 ? 'f' : 't'}">${g === 1 ? 'Male' : g === 2 ? 'Female' : 'Other'}</span>
+                <br><span class="en">${escapeHTML(r[4] || toTitle(deva2roman(r[3])))}</span></h3>
+            <p><b>EPIC:</b> ${escapeHTML(r[2])}</p>
+            <p><b>Part:</b> ${escapeHTML(r[0])} | <b>Serial:</b> ${escapeHTML(r[1])}
+               | <b>Age:</b> ${escapeHTML(r[10])}</p>
+            <p><b>${escapeHTML(r[5])}:</b> ${escapeHTML(r[6])}${r[7] ? ' ' + escapeHTML(r[7]) : ''}</p>
+            ${r[8] ? `<p><b>House:</b> ${escapeHTML(r[8])}</p>` : ''}
+            <p><b>Village:</b> ${escapeHTML(r[21])} ${v.en ? '(' + escapeHTML(v.en) + ')' : ''}</p>
+            ${r[34] ? `<p><b>Gav (Section):</b> ${escapeHTML(r[34])}</p>` : ''}
+            <p><b>Taluka:</b> ${escapeHTML(r[25])} ${tl.en ? '(' + escapeHTML(tl.en) + ')' : ''}
+               | <b>District:</b> ${escapeHTML(r[27])}</p>
+            <p><b>Polling Station:</b> ${escapeHTML(r[30])}</p>
+            <p><b>Address:</b> ${escapeHTML(r[32])}</p>
+            ${r[14] ? `<p><b>Review:</b> ${escapeHTML(r[14])}</p>` : ''}
+        `;
+        resultsDiv.appendChild(card);
+    }
+
+    shown = end;
+    countDiv.textContent = filtered.length
+        ? `Found ${fmt(filtered.length)} voters | Showing ${fmt(shown)}`
+        : 'No voters found. Try a different spelling or fewer filters.';
+    moreBtn.style.display = shown < filtered.length ? 'block' : 'none';
+}
+
+// ===== Export =====
+function exportCSV() {
+    if (!filtered.length) { alert('Nothing to download - no results.'); return; }
+    const head = ['Part', 'Serial', 'EPIC', 'Name (Marathi)', 'Name (English)', 'Relation', 'Relative',
+                  'Age', 'Gender', 'Village', 'Village (English)', 'Gav (Section)', 'Taluka', 'Polling Station', 'Address'];
+    const q = x => '"' + String(x ?? '').replace(/"/g, '""') + '"';
+    const lines = [head.map(q).join(',')];
+    for (const { i } of filtered) {
+        const r = data[i];
+        lines.push([r[0], r[1], r[2], r[3], r[4] || toTitle(deva2roman(r[3])), r[5], r[6], r[10], r[11],
+                    r[21], villages[vIdArr[i]].en, r[34], r[25], r[30], r[32]].map(q).join(','));
+    }
+    const blob = new Blob(['\ufeff' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'voter-search-results.csv';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+}
+
+function clearSearch() {
+    [nameInput, epicInput, partInput, serialInput, villageInput, sectionInput, psInput, ageMin, ageMax]
+        .forEach(el => el.value = '');
+    talukaSel.value = ''; genderSel.value = '';
+    search();
+}
+
+// ===== Live search while typing =====
+let timer;
+[nameInput, epicInput, partInput, serialInput, villageInput, sectionInput, psInput, ageMin, ageMax].forEach(el => {
+    el.addEventListener('input', () => { clearTimeout(timer); timer = setTimeout(search, 250); });
+});
+[talukaSel, genderSel].forEach(el => el.addEventListener('change', search));
+
+// ===== Load compressed voter data =====
+const REL = ['', 'Father', 'Husband', 'Others', 'Mother'];
+const GEN = ['', 'Male', 'Female', 'Third Gender'];
+
+function expand(payload) {
+    const P = payload.parts;
+    return payload.rows.map(c => {
+        const p = P[c[0]];
+        const r = new Array(34).fill('');
+        r[0] = p[0]; r[1] = String(c[1]); r[2] = c[2]; r[3] = c[3];
+        r[5] = REL[c[4]]; r[6] = c[5]; r[8] = c[6];
+        r[10] = c[7] ? String(c[7]) : ''; r[11] = GEN[c[8]]; r[14] = c[9];
+        r[34] = payload.sections ? (payload.sections[c[10]] || '') : '';
+        r[21] = p[1]; r[25] = p[2]; r[27] = p[3]; r[30] = p[4]; r[32] = p[5];
+        return r;
+    });
+}
+
+async function loadData() {
+    if (typeof DecompressionStream === 'undefined')
+        throw new Error('This browser is too old. Please use the latest Chrome, Edge, Firefox or Safari.');
+    const bin = atob($('data').textContent.trim());
+    const bytes = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+    const stream = new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'));
+    const text = await new Response(stream).text();
+    return expand(JSON.parse(text));
+}
+
+// ===== Start =====
+countDiv.textContent = 'Loading voters...';
+loadData().then(rows => {
+    data = rows;
+    countDiv.textContent = 'Preparing search...';
+    setTimeout(() => {
+        buildMeta();
+        buildIndex();
+        search();
+    }, 30);
+}).catch(e => { countDiv.textContent = 'Could not load voter data: ' + e.message; });
+
+</script>
+</body>
+</html>
